@@ -45,6 +45,7 @@ else:
     selected_parameters =  container2.multiselect("Select one or more options:",
         parameters)
 
+st.write('Choose subsets of moments / parameters on the left')
 st.write('Saturate colors means the colormap range is computed with robust quantiles instead of extreme values')
 st.write('Normalize rows / cols means that the (absolute) max along each row / col will be 1. Both cant be on at the same time, row has priority.')
 
