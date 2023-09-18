@@ -78,10 +78,12 @@ def replace_item(the_list):
         elif item in ['T']:
             for c in countries:
                 yield 'T Patent '+c
+            for c in countries:
                 yield 'T Non patent '+c
         elif item in ['SPFLOW']:
             for c in countries:
                 yield 'SPFLOW_origin_'+c
+            for c in countries:
                 yield 'SPFLOW_destination_'+c
         else:
             yield item
