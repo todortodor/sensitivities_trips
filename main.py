@@ -101,12 +101,13 @@ if normalize_rows:
 # df = df[selected_moments]
 
 fig,ax = plt.subplots(figsize=(24,20),dpi=144)
+# fig,ax = plt.subplots(dpi=144)
 
 sns.heatmap(df,ax=ax,
             cmap="vlag",
             center=0,
             robust = saturate,
-            square = True
+            # square = True
             )
 ax.tick_params('x', top=True, labeltop=True,labelrotation=90)
 # ax.tick_params('y', right=True, labelrright=True,labelrotation=0)
