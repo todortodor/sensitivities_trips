@@ -10,18 +10,26 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import streamlit as st
+import time
 sns.set_theme('talk')
+start = time.perf_counter()
 
 # @st.cache_data
 def load_data():
     df = pd.read_csv('all_sensitivity_table_20.csv',index_col=0)
     df = df.drop(['RD_'+c for c in ['CHN','IND','BRA','RUS','ROW','MEX']])
-    return df
+    df = df.drop(['RP_USA'])
+    df2 = pd.read_csv('all_sensitivity_table_20_1020.csv',index_col=0)
+    df2 = df2.drop(['RD_'+c for c in ['CHN','IND','BRA','RUS','ROW','MEX']])
+    df2 = df2.drop(['RP_USA'])
+    return df, df2
 
-df = load_data()
+dfs = load_data()
+df = dfs[0]
+df2 = dfs[1]
 
-moments = ['GPDIFF', 'GROWTH', 'KM', 'SINNOVPATUS', 'OUT', 'TO', 'UUPCOST',
-       'DOMPATINUS', 'TE', 'SRGDP', 'RD', 'RP','SPFLOW']
+moments = ['kappa','sigma','rho','TO','TE','KM','UUPCOST','OUT','GROWTH','GPDIFF',   'SINNOVPATUS',   
+       'DOMPATINUS',  'SRGDP', 'RD', 'RP','SPFLOW']
 parameters = ['k', 'g_0', 'fe', 'fo', 'zeta', 'nu', 'theta', 'delta', 'eta', 
               'T']
 
@@ -69,7 +77,8 @@ def replace_item(the_list):
     for item in the_list:
         if item in ['SRGDP', 'RP']:
             for c in countries:
-                yield item+'_'+c
+                if c != 'USA':
+                    yield item+'_'+c
         elif item in ['delta', 'eta']:
             for c in countries:
                 yield item+' '+c
@@ -90,18 +99,15 @@ def replace_item(the_list):
             yield item
 
 df = df.loc[list(replace_item(selected_moments))][list(replace_item(selected_parameters))]
-# df = df.loc[selected_moments][selected_parameters]
 
 if normalize_columns:
     df = (df.T/df.T.abs().max()).T
 if normalize_rows:
     df = df/df.abs().max()
 
-
-# df = df[selected_moments]
+container3 = st.container()
 
 fig,ax = plt.subplots(figsize=(24,20),dpi=144)
-# fig,ax = plt.subplots(dpi=144)
 
 sns.heatmap(df,ax=ax,
             cmap="vlag",
@@ -110,14 +116,7 @@ sns.heatmap(df,ax=ax,
             # square = True
             )
 ax.tick_params('x', top=True, labeltop=True,labelrotation=90)
-# ax.tick_params('y', right=True, labelrright=True,labelrotation=0)
-# ax.tick_params('both', top=True, labeltop=True,
-#          right=True, labelright=True)
-# ax.tick_params(axis='both', which='major', labelsize=20)
 
-# plt.show()
-
-st.pyplot(fig)
 
 left, right = st.columns(2)
 
@@ -134,7 +133,7 @@ with left:
             file_name=fn,
             mime="image/png"
         )
-        
+
 def convert_df_to_csv(df):
   # IMPORTANT: Cache the conversion to prevent computation on every rerun
   return df.to_csv().encode('utf-8')
@@ -149,3 +148,63 @@ with right:
                             )+str(normalize_rows)+'.csv',
       mime='text/csv',
     )
+                
+container3.pyplot(fig)
+
+selected_moments_2 = [s for s in selected_moments if s not in ['kappa', 'sigma', 'rho']]
+
+df2 = df2.loc[list(replace_item(selected_moments_2))][list(replace_item(selected_parameters))]
+
+if normalize_columns:
+    df2 = (df2.T/df2.T.abs().max()).T
+if normalize_rows:
+    df2 = df2/df2.abs().max()
+
+container4 = st.container()
+
+fig,ax = plt.subplots(figsize=(24,20),dpi=144)
+
+sns.heatmap(df2,ax=ax,
+            cmap="vlag",
+            center=0,
+            robust = saturate,
+            # square = True
+            )
+ax.tick_params('x', top=True, labeltop=True,labelrotation=90)
+
+
+# left, right = st.columns(2)
+
+# with left:
+#     fn = str(selected_moments)+str(selected_parameters
+#                           )+str(saturate
+#                           )+str(normalize_columns
+#                           )+str(normalize_rows)+'.png'
+#     plt.savefig(fn)
+#     with open(fn, "rb") as img:
+#         btn = st.download_button(
+#             label="Download image",
+#             data=img,
+#             file_name=fn,
+#             mime="image/png"
+#         )
+
+# def convert_df2_to_csv(df2):
+#   # IMPORTANT: Cache the conversion to prevent computation on every rerun
+#   return df2.to_csv().encode('utf-8')
+
+# with right:
+#     st.download_button(
+#       label="Download data",
+#       data=convert_df2_to_csv(df2),
+#       file_name=str(selected_moments)+str(selected_parameters
+#                             )+str(saturate
+#                             )+str(normalize_columns
+#                             )+str(normalize_rows)+'.csv',
+#       mime='text/csv',
+#     )
+                
+container4.pyplot(fig)
+
+                                  
+st.write(time.perf_counter()-start)
